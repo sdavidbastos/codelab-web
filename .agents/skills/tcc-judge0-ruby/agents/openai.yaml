@@ -1,0 +1,4 @@
+interface:
+  display_name: "TCC · Executor Judge0"
+  short_description: "Manter e testar o executor Judge0 em Ruby"
+  default_prompt: "Use $tcc-judge0-ruby para revisar ou corrigir o executor Judge0, seu isolamento e seus contratos técnicos no TCC."

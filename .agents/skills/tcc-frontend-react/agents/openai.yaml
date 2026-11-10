@@ -1,0 +1,4 @@
+interface:
+  display_name: "TCC · Frontend React"
+  short_description: "Arquitetura e componentes React do TCC"
+  default_prompt: "Use $tcc-frontend-react para implementar e testar a próxima tela React com TypeScript do TCC."

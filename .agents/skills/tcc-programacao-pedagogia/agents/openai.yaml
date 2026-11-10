@@ -1,0 +1,4 @@
+interface:
+  display_name: "TCC · Ensino de programação"
+  short_description: "Planejar exercícios, feedback e avaliação do TCC"
+  default_prompt: "Use $tcc-programacao-pedagogia para planejar exercícios e evidências de aprendizagem para o TCC."

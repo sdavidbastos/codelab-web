@@ -1,0 +1,8 @@
+node_modules
+dist
+.agents
+.local
+test-results
+playwright-report
+package-lock.json
+docs/evidencias

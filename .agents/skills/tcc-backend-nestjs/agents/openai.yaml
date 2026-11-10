@@ -1,0 +1,4 @@
+interface:
+  display_name: "TCC · Backend NestJS"
+  short_description: "Arquitetura e implementação do backend NestJS"
+  default_prompt: "Use $tcc-backend-nestjs para implementar e testar a próxima tarefa da API educacional NestJS do TCC."

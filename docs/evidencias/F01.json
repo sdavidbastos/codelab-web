@@ -1,0 +1,29 @@
+{
+  "task": "F01",
+  "recorded_at_utc": "2026-11-08T01:03:46.312151+00:00",
+  "repository": "codelab-web",
+  "versions": {
+    "react": "19.3.1",
+    "typescript": "5.9.3",
+    "vite": "8.3.6",
+    "codemirror": "6",
+    "node_image": "24.22.2",
+    "nginx_image": "1.30.6"
+  },
+  "checks": {
+    "browser_tests_simulated_api": 21,
+    "real_browser_flow_tests": 1,
+    "actual_executions": 2,
+    "actual_execution_ids": [
+      "952655a8-8e8d-4baf-9032-a290374a46dd",
+      "d73e6029-f0ad-4f87-8a7a-99b5aaf8b522"
+    ],
+    "browser_calls_judge0_directly": false,
+    "mobile_width": 390,
+    "horizontal_overflow": false,
+    "typecheck": "passed",
+    "build": "passed",
+    "remote_ci_executed": false
+  },
+  "web_image_id": "sha256:06ae21097409fef53a09cadec67c9e7bc9b60a11561dc3ec01a2394cf7d3812b"
+}

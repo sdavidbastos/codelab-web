@@ -1,0 +1,4 @@
+interface:
+  display_name: "TCC · NestJS e React"
+  short_description: "Desenvolver a plataforma NestJS e React do TCC"
+  default_prompt: "Use $tcc-plataforma-typescript para implementar a próxima tarefa do backend NestJS e frontend React do TCC."

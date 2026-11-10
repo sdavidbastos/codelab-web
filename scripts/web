@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+set -euo pipefail
+codelab_web_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$codelab_web_root"
+case "${1:-help}" in
+  up)
+    if ! docker network inspect "${CODELAB_BACKEND_NETWORK:-tcc-nest-api_default}" >/dev/null 2>&1; then
+      printf 'Start the NestJS backend first: ../codelab-api/scripts/api up\n' >&2; exit 1
+    fi
+    docker compose up -d --build --wait
+    ;;
+  stop) docker compose stop web ;;
+  logs) docker compose logs --tail=80 web ;;
+  ps) docker compose ps ;;
+  *) printf 'Usage: ./scripts/web <up|stop|logs|ps>\nUI: http://localhost:5173\n' ;;
+esac

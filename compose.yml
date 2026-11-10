@@ -1,0 +1,19 @@
+name: tcc-codelab-web
+services:
+  web:
+    image: tcc-codelab-web:local
+    build: .
+    ports:
+      - '127.0.0.1:${CODELAB_WEB_HTTP_PORT:-5173}:8080'
+    networks: [backend]
+    init: true
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD', 'wget', '-q', '-O', '/dev/null', 'http://127.0.0.1:8080/']
+      interval: 5s
+      timeout: 3s
+      retries: 12
+networks:
+  backend:
+    external: true
+    name: '${CODELAB_BACKEND_NETWORK:-tcc-nest-api_default}'

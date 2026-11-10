@@ -1,0 +1,13 @@
+.git
+.agents
+.local
+.env
+.env.*
+.npmrc
+node_modules
+dist
+test-results
+playwright-report
+docs
+test
+*.md
