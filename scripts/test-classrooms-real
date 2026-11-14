@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+set -euo pipefail
+codelab_web_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+export CODELAB_API_CHECKOUT="${CODELAB_API_CHECKOUT:-$codelab_web_root/../codelab-api}"
+cd "$codelab_web_root"
+command -v node >/dev/null || { printf 'Node 24 is required for the browser test runner.\n' >&2; exit 1; }
+umask 077
+export CODELAB_TEST_PRIVATE_DIR
+CODELAB_TEST_PRIVATE_DIR="$(mktemp -d /tmp/codelab-web-f02.XXXXXX)"
+codelab_test_project="codelab-web-f02-$$"
+node --input-type=module <<'JS'
+import { randomBytes, randomUUID } from 'node:crypto';
+import { writeFileSync } from 'node:fs';
+const dir = process.env.CODELAB_TEST_PRIVATE_DIR;
+const password = randomBytes(20).toString('hex');
+const teacher = { name: 'Professor F02', email: `${randomUUID()}@f02.example`, password };
+const student = { name: 'Aluna F02', email: `${randomUUID()}@f02.example`, password };
+writeFileSync(`${dir}/accounts.json`, JSON.stringify({ teacher, student }), { mode: 0o600 });
+writeFileSync(`${dir}/teacher.json`, JSON.stringify(teacher), { mode: 0o600 });
+writeFileSync(`${dir}/stack.env`, `TEST_DB_ADMIN_PASSWORD=${randomBytes(24).toString('hex')}\nTEST_DB_PASSWORD=${randomBytes(24).toString('hex')}\n`, { mode: 0o600 });
+JS
+compose_test() { docker compose -p "$codelab_test_project" --env-file "$CODELAB_TEST_PRIVATE_DIR/stack.env" -f infra/compose.classrooms-test.yml "$@"; }
+cleanup() {
+  local result=$?
+  trap - EXIT
+  if compose_test down --remove-orphans; then
+    rm -f -- "$CODELAB_TEST_PRIVATE_DIR/accounts.json" "$CODELAB_TEST_PRIVATE_DIR/teacher.json" "$CODELAB_TEST_PRIVATE_DIR/stack.env" "$CODELAB_TEST_PRIVATE_DIR/teacher-result.json"
+    rmdir -- "$CODELAB_TEST_PRIVATE_DIR"
+  else
+    printf 'Cleanup failed; private config retained at %s; project %s\n' "$CODELAB_TEST_PRIVATE_DIR" "$codelab_test_project" >&2
+    result=1
+  fi
+  exit "$result"
+}
+trap cleanup EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
+docker build --target test -t tcc-codelab-web:api-test -f "$CODELAB_API_CHECKOUT/Dockerfile" "$CODELAB_API_CHECKOUT"
+compose_test up -d --wait
+compose_test exec -T api-test node dist/cli/create-teacher.js < "$CODELAB_TEST_PRIVATE_DIR/teacher.json" > "$CODELAB_TEST_PRIVATE_DIR/teacher-result.json"
+node node_modules/@playwright/test/cli.js test --config playwright.classrooms-real.config.ts

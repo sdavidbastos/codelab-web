@@ -1,0 +1,59 @@
+{
+  "task": "F02",
+  "date": "2026-11-14",
+  "repository": "codelab-web",
+  "scope": "React interface for B05 sessions and B06 classrooms/enrollments",
+  "verification": {
+    "types_and_build": "passed",
+    "format": "passed",
+    "shell_syntax": "passed",
+    "mocked_browser": {
+      "passed": 39,
+      "practice_regressions": 21,
+      "classroom_cases": 18,
+      "command": "npm test",
+      "backend": "mocked /api only"
+    },
+    "real_browser": {
+      "passed": 1,
+      "command": "npm run test:classrooms:real",
+      "stack": "Vite proxy -> NestJS -> disposable PostgreSQL tmpfs",
+      "accounts": "synthetic, generated private temporary credentials; no development account or database access",
+      "cleanup": "disposable containers/network/private fixture files removed",
+      "covered": [
+        "student registration through B04 API",
+        "real login and CSRF",
+        "teacher creates and edits classroom",
+        "enrollment and teacher roster",
+        "HttpOnly cookie Path=/api",
+        "reload restores session",
+        "student reads own classroom without management controls",
+        "revocation removes student access",
+        "re-enrollment restores access",
+        "logout remains revoked after reload"
+      ]
+    },
+    "visual": {
+      "desktop": "docs/evidencias/F02-professor.png",
+      "mobile_login": "docs/evidencias/F02-login-mobile.png",
+      "mobile_classroom": "docs/evidencias/F02-turma-mobile.png",
+      "mobile_width": 390,
+      "horizontal_overflow": false,
+      "integrated_preview": "not available; browser-test captures inspected"
+    },
+    "local_docker": {
+      "url": "http://localhost:5173/#/turmas",
+      "status": "healthy",
+      "GET /": 200,
+      "GET /api/health/ready": 200,
+      "GET /api/auth/me without session": 401
+    }
+  },
+  "limits": [
+    "no classroom activities/exercise versioning/hidden tests/grades",
+    "no public account-registration UI",
+    "no new real Judge0 run; existing practice browser regression uses mocks",
+    "no remote hosting or remote CI execution",
+    "no new commit"
+  ]
+}

@@ -1,0 +1,44 @@
+# Only scripts/test-classrooms-real supplies this disposable stack's credentials.
+services:
+  db-test:
+    image: postgres:16-bookworm@sha256:5264710be20f409750ac6dc4e5706dcef929c87e241605463f0f9aefa932a8d9
+    environment:
+      POSTGRES_PASSWORD: '${TEST_DB_ADMIN_PASSWORD:?Test runner required}'
+      CODELAB_DB_USER: codelab_test
+      CODELAB_DB_NAME: codelab_nest_test
+      CODELAB_DB_PASSWORD: '${TEST_DB_PASSWORD:?Test runner required}'
+    tmpfs:
+      - /var/lib/postgresql/data
+    volumes:
+      - ${CODELAB_API_CHECKOUT:?Backend checkout required}/infra/postgres/init-app.sh:/docker-entrypoint-initdb.d/10-app.sh:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d postgres']
+      interval: 2s
+      timeout: 3s
+      retries: 30
+  api-test:
+    image: tcc-codelab-web:api-test
+    environment:
+      NODE_ENV: test
+      API_HOST: 0.0.0.0
+      API_PORT: '3000'
+      TEST_DATABASE_URL: 'postgresql://codelab_test:${TEST_DB_PASSWORD:?Test runner required}@db-test:5432/codelab_nest_test'
+      AUTH_ALLOWED_ORIGINS: http://127.0.0.1:5176
+    ports:
+      - '127.0.0.1:3006:3000'
+    command: ['sh', '-c', 'npm run db:deploy && node dist/main.js']
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:3000/api/health/ready').then(r => { if (!r.ok) process.exit(1); }).catch(() => process.exit(1))",
+        ]
+      interval: 2s
+      timeout: 3s
+      start_period: 10s
+      retries: 30
+    depends_on:
+      db-test:
+        condition: service_healthy

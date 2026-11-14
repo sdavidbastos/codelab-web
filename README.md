@@ -1,13 +1,14 @@
 # CodeLab Web
 
-Interface de prática do TCC em **React + TypeScript**, conectada ao backend
-NestJS e ao Judge0. Editor Python, exemplos públicos, entrada personalizada,
+Interface do TCC em **React + TypeScript**, com prática Python, login, turmas e
+matrículas conectados ao backend NestJS. Editor Python, exemplos públicos, entrada personalizada,
 saída esperada opcional e resultado real. Esta é a primeira tela do MVP,
 inspirada no ambiente de resolução do LeetCode.
 
 ## Abrir com Docker
 
-O backend e o Judge0 precisam estar iniciados. Na raiz deste repositório:
+O backend precisa estar iniciado. Para executar programas na prática livre,
+inicie também o Judge0; turmas e login funcionam sem o executor. Na raiz deste repositório:
 
 ```bash
 ./scripts/web up
@@ -62,7 +63,7 @@ do PostgreSQL pela API. O polling para após cerca de 30 segundos, além dos
 prazos individuais de rede, e oferece retomada manual.
 
 Cada clique executa **um caso de prática**. Os exemplos são um catálogo local,
-não atividades cadastradas por professor. Ainda não há login, turma, bateria
+não atividades cadastradas por professor. A prática é independente de login/turmas. Não há bateria
 oculta, entrega avaliativa ou nota. Accepted sem saída esperada indica que o
 programa terminou sem erro. Falha operacional não reprova uma solução.
 
@@ -97,8 +98,8 @@ npx playwright install chromium
 npm test
 ```
 
-Os **21 testes Playwright** sobem Vite na porta 5174 e interceptam a API, sem
-usar dados ou submissões reais. Cobrem DTO público, estados, falhas, retomada,
+Os **39 testes Playwright** sobem Vite na porta 5174 e interceptam a API, sem
+usar dados ou submissões reais. Cobrem login/CSRF, papéis, turmas, matrículas, DTO público, estados, falhas, retomada,
 snapshot, rascunhos, teclado, mobile, armazenamento indisponível e saída segura.
 Para usar um Chrome já instalado, configure
 `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/google-chrome`.
@@ -114,4 +115,32 @@ stdin UTF-8. A CI configura somente testes simulados; não depende de sandbox
 privilegiado. A configuração de CI ainda não foi executada remotamente.
 
 Arquitetura e evidências estão em [F01](docs/F01_INTERFACE_REACT.md).
-Repositório criado somente localmente, sem remoto nem commit inicial.
+Repositório local, sem publicação remota.
+
+## Turmas, matrículas e login — F02
+
+Abra **http://localhost:5173/#/turmas**, ou clique em **Turmas** no editor.
+Entre com sua conta existente:
+
+- Professor: crie/edite turmas, matricule alunos pelo e-mail cadastrado e remova
+  matrículas com confirmação. Busca, totais e paginação vêm do servidor.
+- Aluno: consulte suas turmas e respectivos detalhes. A lista de colegas e os
+  controles docentes não são exibidos.
+
+O professor é provisionado por `./scripts/api create-teacher` no backend;
+alunos usam o cadastro B04. Esta interface não inclui cadastro de conta.
+Logout/expiração são reais; a sessão usa cookie HttpOnly e CSRF da API.
+Credenciais não ficam no armazenamento do navegador.
+
+Há uma verificação própria com API/PostgreSQL descartáveis, sem o Judge0:
+
+```bash
+npm run test:classrooms:real
+```
+
+Requer Node 24, Docker e `../codelab-api`, com portas 3006/5176 livres. Cria
+somente fixtures sintéticas e limpa sua infraestrutura ao terminar. Não usa
+credenciais, volumes ou banco de desenvolvimento. O comando `test:real` anterior
+continua sendo exclusivo para as duas execuções de prática no Judge0 ativo.
+
+Contrato, configuração e evidências estão no [guia F02](docs/F02_TURMAS_MATRICULAS.md).
