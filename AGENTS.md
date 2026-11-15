@@ -1,10 +1,10 @@
 # CodeLab — interface React do TCC
 
 - Este é o repositório local independente `codelab-web`, autorizado pelo usuário ao priorizar a interface do MVP. Backend NestJS em `../codelab-api`, executor Ruby em `../judge0`. Não recriar monorepo nem importar fontes, Prisma ou configurações privadas dos outros checkouts.
-- Ler `README.md`, `docs/F01_INTERFACE_REACT.md`, `docs/F02_TURMAS_MATRICULAS.md` e as skills locais `tcc-frontend-react` e `tcc-plataforma-typescript`, incluindo suas referências pertinentes.
+- Ler `README.md`, `docs/F01_INTERFACE_REACT.md`, `docs/F02_TURMAS_MATRICULAS.md`, `docs/F03_EXERCICIOS_VERSOES.md` e as skills locais `tcc-frontend-react` e `tcc-plataforma-typescript`, incluindo suas referências pertinentes.
 - Stack: React/TypeScript estrito, Vite e CodeMirror. Organização por funcionalidade; `App` compõe a página, `useExecution` controla envio/consulta e o cliente de API valida JSON em runtime. Navegação entre prática e turmas usa rotas hash; sessão tem Context, sem store global de dados.
 - A interface consome somente `/api` do NestJS via proxy. Não chamar Judge0 diretamente, expor suas chaves/tokens ou incluir casos ocultos no bundle. Exemplos locais são públicos, uma execução por caso, sem aluno/atividade/nota.
-- F02 entregue: login/logout B05 e turmas/matrículas B06 reais. Professor administra seus vínculos; aluno consulta suas turmas sem roster. Próxima tarefa do backend é B07, sem simular atividades, entregas ou indicadores nesta interface.
+- F02 entregue: login/logout B05 e turmas/matrículas B06 reais. Professor administra seus vínculos; aluno consulta suas turmas sem roster. F03 integra a B07: autoria docente de exercícios, rascunho, publicação e histórico imutável. Próxima tarefa do backend é B08, sem simular atividades, entregas ou indicadores nesta interface.
 - Preservar o snapshot enviado separadamente do rascunho editável. Resultado antigo não pertence ao código novo. Falhas operacionais/timeout não viram resposta errada; nunca repetir POST automaticamente. Retomada usa GET do ID público.
 - Polling tem prazo, intervalo e cancelamento ao desmontar. Não interpretar parada da consulta como cancelamento do programa no Judge0. Rascunhos/último ID ficam neste navegador; o PostgreSQL continua sendo fonte de verdade do resultado.
 - Código, stdout e diagnósticos são texto, sem `dangerouslySetInnerHTML`. Manter labels, teclado, foco, mensagens textuais e layout móvel.
@@ -12,3 +12,5 @@
 - Repositório somente local; não criar remoto, novo commit ou publicação sem solicitação. Configurações privadas em `.local`/ambiente, ignoradas por Git e Docker.
 
 - Sessão/CSRF apenas em memória, cookie HttpOnly pelo navegador; respostas 401/expiração retiram a visão privada. Contratos públicos validados em runtime, sem imports do backend. Consultas abortam ao sair e mutações não têm retry automático. `npm run test:classrooms:real` usa somente TEST_DATABASE_URL em stack PostgreSQL/tmpfs descartável com fixtures sintéticas; não usar banco de desenvolvimento como teste.
+- Exercícios: somente professor autor recebe dados pela API; o guard visual não substitui a autorização B07. Alterações não salvas pedem confirmação ao sair. Publicação usa somente conteúdo salvo; edição exige abrir rascunho. Histórico é leitura e rascunhos com publicação anterior não podem ser excluídos. O editor CodeMirror compartilhado está em `shared/ui`, sem duplicação da prática.
+- `npm run test:questions:real` reutiliza a stack descartável de turmas, nas mesmas portas 3006/5176; executar separadamente. Não usa Judge0, dados reais ou banco de desenvolvimento. Casos de F03 são públicos; limites publicados ainda não alteram a prática E01.

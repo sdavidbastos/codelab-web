@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { Modal } from '../../shared/ui/Modal';
-import { useMutation } from './hooks';
+import { useMutation } from '../auth/hooks';
 import { useAuth } from '../auth/AuthProvider';
 import { parseClassroom, type Classroom } from './api';
 

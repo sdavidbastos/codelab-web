@@ -3,7 +3,7 @@ import { defineConfig } from '@playwright/test';
 export default defineConfig({
   testDir: './test/browser',
   outputDir: 'test-results/mocked',
-  testMatch: ['practice.spec.ts', 'classrooms.spec.ts'],
+  testMatch: ['practice.spec.ts', 'classrooms.spec.ts', 'questions.spec.ts'],
   workers: 1,
   retries: 0,
   timeout: 20000,

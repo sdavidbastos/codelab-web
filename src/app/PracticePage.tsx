@@ -11,7 +11,7 @@ import type { Snapshot } from '../features/practice/api/executions';
 const initialExercise = () =>
   exercises.find((item) => item.id === window.location.hash.slice(1)) ?? exercises[0];
 const CodeEditor = lazy(async () => {
-  const module = await import('../features/practice/components/CodeEditor');
+  const module = await import('../shared/ui/CodeEditor');
   return { default: module.CodeEditor };
 });
 export function PracticePage() {

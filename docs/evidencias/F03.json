@@ -1,0 +1,61 @@
+{
+  "task": "F03 — interface docente de exercícios e versões B07",
+  "date": "2026-11-14",
+  "repository": "codelab-web",
+  "checks": {
+    "typescriptAndViteBuild": "passed",
+    "prettier": "passed",
+    "runnerBashSyntax": "passed",
+    "playwrightMocked": {
+      "passed": 53,
+      "practice": 21,
+      "authAndClassrooms": 18,
+      "questions": 14
+    },
+    "playwrightQuestionsReal": {
+      "passed": 1,
+      "backend": "NestJS B07",
+      "database": "disposable PostgreSQL tmpfs",
+      "judge0Submissions": 0
+    },
+    "playwrightClassroomsReal": {
+      "passed": 1,
+      "database": "disposable PostgreSQL tmpfs"
+    },
+    "visualInspection": {
+      "desktop": "1440x1000",
+      "mobile": "390x844",
+      "horizontalOverflow": false,
+      "source": "mocked browser fixtures",
+      "integratedPreviewAvailable": false
+    },
+    "localDockerSmoke": {
+      "webStatus": 200,
+      "apiReadyStatus": 200,
+      "anonymousQuestionsStatus": 401,
+      "loginVisible": true,
+      "browserErrors": []
+    }
+  },
+  "screenshots": [
+    "F03-editor-desktop.png",
+    "F03-editor-mobile.png",
+    "F03-versao-mobile.png"
+  ],
+  "scope": [
+    "teacher authoring",
+    "saved draft publication",
+    "immutable version history",
+    "server search and pagination",
+    "public cases",
+    "execution limit metadata"
+  ],
+  "excluded": [
+    "hidden cases",
+    "classroom activities",
+    "student submissions or grades",
+    "Judge0 changes",
+    "remote publication or CI"
+  ],
+  "developmentDataUsedForTests": false
+}

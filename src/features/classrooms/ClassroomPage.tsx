@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { useAuth } from '../auth/AuthProvider';
-import { useMutation, useQuery } from './hooks';
+import { useMutation, useQuery } from '../auth/hooks';
 import { Icon } from '../../shared/ui/Icon';
 import { Modal } from '../../shared/ui/Modal';
 import { Pagination } from '../../shared/ui/Pagination';
@@ -26,6 +26,7 @@ function Roster({ classroomId }: { classroomId: string }) {
         parseEnrollment(
           await call(`/api/classrooms/${classroomId}/enrollments`, {
             method: 'POST',
+            messages: { 409: 'Este aluno já está matriculado nesta turma.' },
             body: { email: email.trim().toLowerCase() },
             signal,
           }),

@@ -12,6 +12,7 @@ export interface RequestOptions {
   body?: unknown;
   csrf?: string;
   signal?: AbortSignal;
+  messages?: Partial<Record<number, string>>;
 }
 export async function request(path: string, options: RequestOptions = {}): Promise<unknown> {
   const method = options.method ?? 'GET';
@@ -47,12 +48,14 @@ export async function request(path: string, options: RequestOptions = {}): Promi
       401: 'Sua sessão expirou. Entre novamente para continuar.',
       403: 'Acesso não permitido. Atualize sua sessão antes de tentar novamente.',
       404: 'O recurso não foi encontrado ou não está disponível para sua conta.',
-      409: 'Este aluno já está matriculado nesta turma.',
+      409: 'A solicitação conflita com o estado atual. Consulte os dados antes de tentar novamente.',
       429: 'Muitas tentativas. Aguarde alguns minutos antes de tentar novamente.',
     };
     throw new RequestError(
       response.status,
-      messages[response.status] ?? 'O serviço está indisponível. Seus campos foram preservados.',
+      options.messages?.[response.status] ??
+        messages[response.status] ??
+        'O serviço está indisponível. Seus campos foram preservados.',
     );
   }
   if (response.status === 204) return undefined;

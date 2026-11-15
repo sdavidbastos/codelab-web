@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useRef } from 'react';
 import { basicSetup } from 'codemirror';
 import { EditorView, keymap } from '@codemirror/view';
-import { EditorState, Prec } from '@codemirror/state';
+import { Compartment, EditorState, Prec } from '@codemirror/state';
 import { indentWithTab } from '@codemirror/commands';
 import { python } from '@codemirror/lang-python';
 import { oneDark } from '@codemirror/theme-one-dark';
@@ -10,14 +10,21 @@ export function CodeEditor({
   value,
   onChange,
   onRun,
+  ariaLabel = 'Editor de código Python',
+  describedBy = 'editor-keyboard-help',
+  readOnly = false,
 }: {
   value: string;
   onChange: (value: string) => void;
-  onRun: () => void;
+  onRun?: () => void;
+  ariaLabel?: string;
+  describedBy?: string;
+  readOnly?: boolean;
 }) {
   const host = useRef<HTMLDivElement>(null);
   const view = useRef<EditorView | null>(null);
   const initial = useRef(value);
+  const editable = useRef(new Compartment());
   const callbacks = useRef({ onChange, onRun });
   useLayoutEffect(() => {
     callbacks.current = { onChange, onRun };
@@ -30,6 +37,10 @@ export function CodeEditor({
         doc: initial.current,
         extensions: [
           basicSetup,
+          editable.current.of([
+            EditorState.readOnly.of(readOnly),
+            EditorView.editable.of(!readOnly),
+          ]),
           python(),
           oneDark,
           Prec.highest(
@@ -37,6 +48,7 @@ export function CodeEditor({
               {
                 key: 'Mod-Enter',
                 run: () => {
+                  if (!callbacks.current.onRun) return false;
                   callbacks.current.onRun();
                   return true;
                 },
@@ -45,8 +57,8 @@ export function CodeEditor({
             ]),
           ),
           EditorView.contentAttributes.of({
-            'aria-label': 'Editor de código Python',
-            'aria-describedby': 'editor-keyboard-help',
+            'aria-label': ariaLabel,
+            'aria-describedby': describedBy,
             spellcheck: 'false',
           }),
           EditorView.theme(
@@ -79,5 +91,13 @@ export function CodeEditor({
     if (editor && editor.state.doc.toString() !== value)
       editor.dispatch({ changes: { from: 0, to: editor.state.doc.length, insert: value } });
   }, [value]);
+  useEffect(() => {
+    view.current?.dispatch({
+      effects: editable.current.reconfigure([
+        EditorState.readOnly.of(readOnly),
+        EditorView.editable.of(!readOnly),
+      ]),
+    });
+  }, [readOnly]);
   return <div className="code-editor" ref={host} />;
 }

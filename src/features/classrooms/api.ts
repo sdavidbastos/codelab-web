@@ -1,3 +1,4 @@
+import { parsePage } from '../../shared/api/page';
 import { invalidResponse, isDate, isObject, isUuid } from '../../shared/api/http';
 
 export interface Classroom {
@@ -13,12 +14,6 @@ export interface Enrollment {
   student: { id: string; name: string; email: string };
   createdAt: string;
   updatedAt: string;
-}
-export interface Page<T> {
-  items: T[];
-  total: number;
-  page: number;
-  pageSize: number;
 }
 export function parseClassroom(value: unknown): Classroom {
   if (
@@ -59,31 +54,6 @@ export function parseEnrollment(value: unknown): Enrollment {
     student: { id: value.student.id, name: value.student.name, email: value.student.email },
     createdAt: value.createdAt,
     updatedAt: value.updatedAt,
-  };
-}
-function parsePage<T>(value: unknown, parse: (item: unknown) => T): Page<T> {
-  if (
-    !isObject(value) ||
-    !Array.isArray(value.items) ||
-    typeof value.total !== 'number' ||
-    !Number.isSafeInteger(value.total) ||
-    value.total < 0 ||
-    typeof value.page !== 'number' ||
-    !Number.isSafeInteger(value.page) ||
-    value.page < 1 ||
-    typeof value.pageSize !== 'number' ||
-    !Number.isSafeInteger(value.pageSize) ||
-    value.pageSize < 1 ||
-    value.pageSize > 50 ||
-    value.items.length > value.pageSize ||
-    value.items.length > value.total
-  )
-    return invalidResponse();
-  return {
-    items: value.items.map(parse),
-    total: value.total,
-    page: value.page,
-    pageSize: value.pageSize,
   };
 }
 export const parseClassrooms = (value: unknown) => parsePage(value, parseClassroom);

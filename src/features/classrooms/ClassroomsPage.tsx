@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { useAuth } from '../auth/AuthProvider';
-import { useQuery } from './hooks';
+import { useQuery } from '../auth/hooks';
 import { Icon } from '../../shared/ui/Icon';
 import { Pagination } from '../../shared/ui/Pagination';
 import { ClassroomForm } from './ClassroomForm';

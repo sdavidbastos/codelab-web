@@ -1,14 +1,40 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { AuthProvider, useAuth } from '../features/auth/AuthProvider';
 import { LoginPage } from '../features/auth/LoginPage';
 import { ClassroomsPage } from '../features/classrooms/ClassroomsPage';
 import { ClassroomPage } from '../features/classrooms/ClassroomPage';
 import { errorMessage, isUuid } from '../shared/api/http';
 import { Icon } from '../shared/ui/Icon';
+import { QuestionsPage } from '../features/questions/QuestionsPage';
+import { QuestionPage, NewQuestionPage, VersionPage } from '../features/questions/QuestionPage';
+import { LEAVE_EVENT } from '../shared/ui/useLeaveGuard';
 import { PracticePage } from './PracticePage';
 import './learning.css';
+import './questions.css';
 
-function LearningHeader() {
+type LearningRoute =
+  | { kind: 'classrooms'; id?: string }
+  | { kind: 'questions'; id?: string; creating?: boolean; version?: number };
+function parseRoute(hash: string): LearningRoute | null {
+  if (hash === '#/turmas') return { kind: 'classrooms' };
+  if (hash === '#/exercicios') return { kind: 'questions' };
+  if (hash === '#/exercicios/novo') return { kind: 'questions', creating: true };
+  const parts = hash.split('/');
+  if (parts.length === 3 && isUuid(parts[2]) && ['turmas', 'exercicios'].includes(parts[1]))
+    return { kind: parts[1] === 'turmas' ? 'classrooms' : 'questions', id: parts[2] };
+  if (
+    parts.length === 5 &&
+    parts[1] === 'exercicios' &&
+    isUuid(parts[2]) &&
+    parts[3] === 'versoes' &&
+    /^[1-9]\d*$/.test(parts[4]) &&
+    Number(parts[4]) <= 2147483647
+  )
+    return { kind: 'questions', id: parts[2], version: Number(parts[4]) };
+  return null;
+}
+
+function LearningHeader({ section }: { section: 'classrooms' | 'questions' }) {
   const { state, logout, pending } = useAuth();
   const [error, setError] = useState('');
   return (
@@ -24,9 +50,14 @@ function LearningHeader() {
         </a>
         <nav className="learning-nav" aria-label="Navegação principal">
           <a href="#hello">Prática livre</a>
-          <a href="#/turmas" aria-current="page">
+          <a href="#/turmas" aria-current={section === 'classrooms' ? 'page' : undefined}>
             Minhas turmas
           </a>
+          {state.phase === 'authenticated' && state.session.user.role === 'TEACHER' && (
+            <a href="#/exercicios" aria-current={section === 'questions' ? 'page' : undefined}>
+              Exercícios
+            </a>
+          )}
         </nav>
         {state.phase === 'authenticated' ? (
           <div className="account-menu">
@@ -38,6 +69,7 @@ function LearningHeader() {
               className="button secondary"
               disabled={!!pending}
               onClick={() => {
+                if (!window.dispatchEvent(new Event(LEAVE_EVENT, { cancelable: true }))) return;
                 setError('');
                 void logout().catch((cause: unknown) => setError(errorMessage(cause)));
               }}
@@ -58,7 +90,7 @@ function LearningHeader() {
     </>
   );
 }
-function ProtectedArea({ id }: { id?: string }) {
+function ProtectedArea({ route }: { route: LearningRoute }) {
   const auth = useAuth();
   useEffect(() => {
     if (auth.state.phase === 'unknown') void auth.restore();
@@ -87,16 +119,46 @@ function ProtectedArea({ id }: { id?: string }) {
       </main>
     );
   if (auth.state.phase === 'anonymous') return <LoginPage notice={auth.state.notice} />;
-  return id ? (
-    <ClassroomPage key={auth.state.session.user.id + id} id={id} />
+  const user = auth.state.session.user;
+  if (route.kind === 'questions') {
+    if (user.role !== 'TEACHER')
+      return (
+        <main className="learning-main query-state">
+          <h1>Área do professor</h1>
+          <p>Os exercícios são organizados pelo professor responsável.</p>
+          <a className="button secondary" href="#/turmas">
+            Ver minhas turmas
+          </a>
+        </main>
+      );
+    if (route.creating) return <NewQuestionPage key={user.id} />;
+    if (route.id && route.version)
+      return (
+        <VersionPage
+          key={user.id + route.id + route.version}
+          id={route.id}
+          number={route.version}
+        />
+      );
+    if (route.id) return <QuestionPage key={user.id + route.id} id={route.id} />;
+    return <QuestionsPage key={user.id} />;
+  }
+  return route.id ? (
+    <ClassroomPage key={user.id + route.id} id={route.id} />
   ) : (
-    <ClassroomsPage key={auth.state.session.user.id} />
+    <ClassroomsPage key={user.id} />
   );
 }
 function Router() {
   const [hash, setHash] = useState(window.location.hash);
+  const currentHash = useRef(hash);
   useEffect(() => {
     const change = () => {
+      if (!window.dispatchEvent(new Event(LEAVE_EVENT, { cancelable: true }))) {
+        window.history.replaceState(null, '', currentHash.current);
+        return;
+      }
+      currentHash.current = window.location.hash;
       setHash(window.location.hash);
       window.scrollTo(0, 0);
     };
@@ -104,14 +166,13 @@ function Router() {
     return () => window.removeEventListener('hashchange', change);
   }, []);
   const learning = hash.startsWith('#/');
-  const id = hash.slice('#/turmas/'.length);
-  const valid = hash === '#/turmas' || (hash.startsWith('#/turmas/') && isUuid(id));
+  const route = parseRoute(hash);
   if (!learning) return <PracticePage />;
   return (
     <>
-      <LearningHeader />
-      {valid ? (
-        <ProtectedArea id={hash === '#/turmas' ? undefined : id} />
+      <LearningHeader section={hash.startsWith('#/exercicios') ? 'questions' : 'classrooms'} />
+      {route ? (
+        <ProtectedArea route={route} />
       ) : (
         <main className="learning-main query-state">
           <h1>Página não encontrada</h1>

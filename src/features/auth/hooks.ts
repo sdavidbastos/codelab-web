@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useAuth } from '../auth/AuthProvider';
+import { useAuth } from './AuthProvider';
 import { errorMessage, RequestError } from '../../shared/api/http';
 
 type QueryState<T> =
@@ -38,7 +38,11 @@ export function useQuery<T>(path: string, parse: (value: unknown) => T) {
     return () => controller.abort();
   }, [key, path, parse, call, version]);
   const state: QueryState<T> = record.key === key ? record.state : { phase: 'loading' };
-  return { state, refresh };
+  const replace = useCallback(
+    (data: T) => setRecord({ key, state: { phase: 'ready', data } }),
+    [key],
+  );
+  return { state, refresh, replace };
 }
 
 export function useMutation() {

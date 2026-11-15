@@ -1,14 +1,14 @@
 # CodeLab Web
 
-Interface do TCC em **React + TypeScript**, com prática Python, login, turmas e
-matrículas conectados ao backend NestJS. Editor Python, exemplos públicos, entrada personalizada,
-saída esperada opcional e resultado real. Esta é a primeira tela do MVP,
-inspirada no ambiente de resolução do LeetCode.
+Interface do TCC em **React + TypeScript**, com prática Python, login, turmas,
+matrículas e autoria de exercícios versionados conectados ao backend NestJS.
+A prática livre oferece editor Python, exemplos públicos, entrada personalizada,
+saída esperada opcional e resultado real.
 
 ## Abrir com Docker
 
 O backend precisa estar iniciado. Para executar programas na prática livre,
-inicie também o Judge0; turmas e login funcionam sem o executor. Na raiz deste repositório:
+inicie também o Judge0; turmas, exercícios e login funcionam sem o executor. Na raiz deste repositório:
 
 ```bash
 ./scripts/web up
@@ -98,8 +98,9 @@ npx playwright install chromium
 npm test
 ```
 
-Os **39 testes Playwright** sobem Vite na porta 5174 e interceptam a API, sem
-usar dados ou submissões reais. Cobrem login/CSRF, papéis, turmas, matrículas, DTO público, estados, falhas, retomada,
+Os **53 testes Playwright** sobem Vite na porta 5174 e interceptam a API, sem
+usar dados ou submissões reais. Cobrem login/CSRF, papéis, turmas, matrículas,
+exercícios e versões, DTO público, estados, falhas, retomada,
 snapshot, rascunhos, teclado, mobile, armazenamento indisponível e saída segura.
 Para usar um Chrome já instalado, configure
 `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/google-chrome`.
@@ -144,3 +145,34 @@ credenciais, volumes ou banco de desenvolvimento. O comando `test:real` anterior
 continua sendo exclusivo para as duas execuções de prática no Judge0 ativo.
 
 Contrato, configuração e evidências estão no [guia F02](docs/F02_TURMAS_MATRICULAS.md).
+
+## Exercícios e versões — F03
+
+Abra **http://localhost:5173/#/exercicios** e entre como professor. A aba
+**Exercícios** também fica disponível na navegação da área autenticada.
+
+1. Clique em **Novo exercício** e preencha título, enunciado e os campos opcionais.
+2. Prepare o código inicial Python, os limites e os casos públicos de entrada/saída.
+3. **Salvar rascunho** persiste a edição. Para publicar, salve pelo menos um caso.
+4. **Publicar versão** preserva o conteúdo e os casos daquele momento.
+5. Use **Abrir novo rascunho** para revisar; consulte as publicações anteriores
+   no **Histórico de versões**, em modo de leitura.
+
+Busca, filtro e paginação consultam a API. Somente rascunhos nunca publicados
+podem ser excluídos. Alterações não salvas pedem confirmação ao sair; falhas de
+salvamento preservam os campos, sem reenvio automático. O rascunho de autoria
+fica em memória até ser salvo no servidor.
+
+A publicação ainda não vincula o exercício a turmas nem cria atividades para
+alunos. Os casos desta etapa são públicos; casos ocultos e avaliação vêm nas
+próximas etapas. A prática livre mantém seu catálogo independente.
+
+Para validar com backend B07 e PostgreSQL descartáveis:
+
+```bash
+npm run test:questions:real
+```
+
+Usa os mesmos requisitos e portas do teste real de turmas; execute os dois
+comandos separadamente. Não requer Judge0 nem usa o banco de desenvolvimento.
+Detalhes e evidências no [guia F03](docs/F03_EXERCICIOS_VERSOES.md).

@@ -15,7 +15,8 @@
     "test:real": "playwright test --config playwright.real.config.ts",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test:classrooms:real": "./scripts/test-classrooms-real"
+    "test:classrooms:real": "./scripts/test-classrooms-real",
+    "test:questions:real": "./scripts/test-classrooms-real questions"
   },
   "dependencies": {
     "@codemirror/commands": "6.11.1",
