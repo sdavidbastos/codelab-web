@@ -1,11 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 
-test('real browser → NestJS → disposable PostgreSQL: draft, two immutable publications, reload and student denial', async ({
-  page,
-  browser,
-  request,
-}) => {
+function readAccounts() {
   const directory = process.env.CODELAB_TEST_PRIVATE_DIR;
   if (!directory) throw new Error('Use npm run test:questions:real with its disposable stack.');
   const accounts: unknown = JSON.parse(readFileSync(directory + '/accounts.json', 'utf8'));
@@ -32,6 +28,15 @@ test('real browser → NestJS → disposable PostgreSQL: draft, two immutable pu
     throw new Error('Invalid synthetic accounts');
   const teacher = account(accounts.teacher);
   const student = account(accounts.student);
+  return { teacher, student };
+}
+
+test('real browser → NestJS → disposable PostgreSQL: draft, two immutable publications, reload and student denial', async ({
+  page,
+  browser,
+  request,
+}) => {
+  const { teacher, student } = readAccounts();
   expect((await request.post('/api/users', { data: student })).status()).toBe(201);
   async function login(target: Page, credentials: { email: string; password: string }) {
     await target.goto('/#/exercicios');
@@ -53,10 +58,10 @@ test('real browser → NestJS → disposable PostgreSQL: draft, two immutable pu
   await page.getByLabel('CPU (segundos)', { exact: true }).fill('1');
   await page.getByLabel('Tempo de parede (segundos)').fill('3');
   await page.getByLabel('Memória (KB)').fill('65536');
-  await page.getByRole('button', { name: 'Adicionar caso público' }).click();
+  await page.getByRole('button', { name: 'Adicionar caso' }).click();
   await page.getByLabel('Entrada do caso 1').fill('João\n');
   await page.getByLabel('Saída esperada do caso 1').fill('Olá, João!\n');
-  await page.getByRole('button', { name: 'Adicionar caso público' }).click();
+  await page.getByRole('button', { name: 'Adicionar caso' }).click();
   await page.getByRole('button', { name: 'Salvar rascunho', exact: true }).click();
   await expect(
     page.getByRole('heading', { name: 'Saudação — versão um', exact: true }),
@@ -111,9 +116,87 @@ test('real browser → NestJS → disposable PostgreSQL: draft, two immutable pu
     await expect(studentPage.getByRole('heading', { name: 'Área do professor' })).toBeVisible();
     expect((await studentPage.request.get(`/api/questions/${id}`)).status()).toBe(403);
     expect((await studentPage.request.get(`/api/questions/${id}/versions/1`)).status()).toBe(403);
+    expect(
+      (await studentPage.request.get(`/api/questions/${id}/versions/1/preview`)).status(),
+    ).toBe(403);
   } finally {
     await studentContext.close();
   }
   await page.getByRole('button', { name: 'Sair', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Entre na sua conta' })).toBeVisible();
+});
+
+test('real mixed battery: visibility persists, preview is server-filtered and original snapshot stays private', async ({
+  page,
+}) => {
+  const { teacher } = readAccounts();
+  const privateInput = 'entrada privada sintética F04 — ação';
+  const privateExplanation = 'explicação privada sintética F04';
+  await page.goto('/#/exercicios');
+  await page.getByLabel('E-mail', { exact: true }).fill(teacher.email);
+  await page.getByLabel('Senha', { exact: true }).fill(teacher.password);
+  await page.getByRole('button', { name: 'Entrar', exact: true }).click();
+  await page.getByRole('link', { name: 'Novo exercício', exact: true }).click();
+  await page.getByLabel('Título do exercício').fill('Bateria mista — integração F04');
+  await page
+    .getByRole('textbox', { name: 'Enunciado', exact: true })
+    .fill('Leia a entrada e produza a saída definida no contrato.');
+  await page.getByRole('button', { name: 'Adicionar caso', exact: true }).click();
+  await page.getByLabel('Visibilidade do caso 1').selectOption('HIDDEN');
+  await page.getByLabel('Entrada do caso 1').fill(privateInput);
+  await page.getByLabel('Explicação do caso 1').fill(privateExplanation);
+  await page.getByRole('button', { name: 'Adicionar caso', exact: true }).click();
+  await page.getByRole('button', { name: 'Salvar rascunho', exact: true }).click();
+  await expect(
+    page.getByRole('heading', { name: 'Bateria mista — integração F04', exact: true }),
+  ).toBeVisible();
+  const id = new URL(page.url()).hash.split('/').at(-1);
+  expect(id).toMatch(/^[a-f0-9-]{36}$/);
+  await page.reload();
+  await expect(page.getByLabel('Visibilidade do caso 1')).toHaveValue('HIDDEN');
+  await expect(page.getByLabel('Visibilidade do caso 2')).toHaveValue('PUBLIC');
+  await expect(page.getByLabel('Entrada do caso 1')).toHaveValue(privateInput);
+  await page.getByRole('button', { name: 'Publicar versão 1' }).click();
+  await page.getByRole('button', { name: 'Confirmar publicação' }).click();
+  await page.getByRole('link', { name: 'Consultar versão 1', exact: true }).waitFor();
+  const previewPath = `/api/questions/${id}/versions/1/preview`;
+  const traffic: string[] = [];
+  const observe = (request: import('@playwright/test').Request) => {
+    const path = new URL(request.url()).pathname;
+    if (path.startsWith(`/api/questions/${id}`)) traffic.push(path);
+  };
+  page.on('request', observe);
+  await page.getByRole('link', { name: 'Prévia do aluno', exact: true }).click();
+  await expect(page.getByText('PRÉVIA DO ALUNO · VERSÃO 1', { exact: true })).toBeVisible();
+  page.off('request', observe);
+  expect([...new Set(traffic)]).toEqual([previewPath]);
+  await expect(page.getByLabel('Entrada publicada do caso 1')).toHaveText('(entrada vazia)');
+  await expect(page.getByLabel('Saída publicada do caso 1')).toHaveText('(saída vazia)');
+  await expect(page.locator('main')).not.toContainText(privateInput);
+  await expect(page.locator('main')).not.toContainText(privateExplanation);
+  const actualPreview = await page.request.get(previewPath);
+  expect(actualPreview.headers()['cache-control']).toBe('no-store');
+  const originalProjection = await actualPreview.json();
+  expect(JSON.stringify(originalProjection)).not.toContain(privateInput);
+  expect(originalProjection).toMatchObject({
+    number: 1,
+    comparisonPolicy: 'judge0_text_rstrip_v1',
+    testCases: [{ position: 1, stdin: '', expectedOutput: '' }],
+  });
+  expect(originalProjection.testCases).toHaveLength(1);
+  await page.getByRole('link', { name: 'Voltar à versão docente', exact: true }).click();
+  await expect(page.getByText(privateInput, { exact: true })).toBeVisible();
+  await page.getByRole('link', { name: 'Voltar ao exercício', exact: true }).click();
+  await page.getByRole('button', { name: 'Abrir novo rascunho' }).click();
+  await page.getByLabel('Visibilidade do caso 1').selectOption('PUBLIC');
+  await page.getByRole('button', { name: 'Salvar rascunho', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Publicar versão 2' })).toBeEnabled();
+  await page.getByRole('button', { name: 'Publicar versão 2' }).click();
+  await page.getByRole('button', { name: 'Confirmar publicação' }).click();
+  await page.getByRole('link', { name: 'Prévia do aluno', exact: true }).click();
+  await expect(page.getByText(privateInput, { exact: true })).toBeVisible();
+  await page.goto(`/#/exercicios/${id}/versoes/1/previa`);
+  await expect(page.getByText('PRÉVIA DO ALUNO · VERSÃO 1', { exact: true })).toBeVisible();
+  await expect(page.locator('main')).not.toContainText(privateInput);
+  expect(await (await page.request.get(previewPath)).json()).toEqual(originalProjection);
 });

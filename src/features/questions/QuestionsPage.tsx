@@ -115,7 +115,7 @@ export function QuestionsPage() {
                   </h2>
                   <p className="muted">
                     Python 3 · {item.testCaseCount}{' '}
-                    {item.testCaseCount === 1 ? 'caso público' : 'casos públicos'}
+                    {item.testCaseCount === 1 ? 'caso de teste' : 'casos de teste'}
                   </p>
                   <div className="card-bottom">
                     <span className="small muted">

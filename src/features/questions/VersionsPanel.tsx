@@ -41,7 +41,7 @@ export function VersionsPanel({ id }: { id: string }) {
                       <strong>{version.title}</strong>
                       <small>
                         {formatDate(version.publishedAt)} · {version.testCaseCount}{' '}
-                        {version.testCaseCount === 1 ? 'caso público' : 'casos públicos'}
+                        {version.testCaseCount === 1 ? 'caso de teste' : 'casos de teste'}
                       </small>
                     </span>
                     <span aria-hidden="true">→</span>

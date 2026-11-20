@@ -1,0 +1,69 @@
+{
+  "task": "F04 — integração de casos públicos/ocultos e prévia B08 no React",
+  "date": "2026-11-19",
+  "repository": "codelab-web",
+  "baseCommits": {
+    "web": "40e397f",
+    "api": "ddcdedf"
+  },
+  "backendState": "B08 local commit ddcdedf",
+  "checks": {
+    "typescriptAndViteBuild": "passed",
+    "prettier": "passed",
+    "gitDiffCheck": "passed",
+    "playwrightMocked": {
+      "passed": 69,
+      "practice": 21,
+      "authAndClassrooms": 18,
+      "questionsAndVersions": 14,
+      "visibilityAndPreview": 16
+    },
+    "playwrightQuestionsReal": {
+      "passed": 2,
+      "backend": "NestJS B08",
+      "database": "disposable PostgreSQL tmpfs; TEST_DATABASE_URL only",
+      "interceptedApi": false,
+      "judge0Executions": 0
+    },
+    "visualInspection": {
+      "desktop": "1440x1000",
+      "mobile": "390x844",
+      "horizontalOverflow": false,
+      "source": "synthetic mocked browser fixtures"
+    },
+    "localDockerSmoke": {
+      "webStatus": 200,
+      "apiReadyStatus": 200,
+      "anonymousPreviewStatus": 401,
+      "previewCacheControl": "no-store",
+      "loginVisible": true,
+      "browserErrors": []
+    }
+  },
+  "covered": [
+    "explicit PUBLIC/HIDDEN and policy payload with CSRF",
+    "saved public example required for publication",
+    "visibility dirty state, navigation guard and failure preservation",
+    "duplicate stdin rejected across visibility",
+    "published read-only teacher labels and policy description",
+    "preview requests only the server projection",
+    "immutable earlier preview across visibility revisions",
+    "invalid/missing authoring visibility or policy rejected",
+    "unexpected preview fields/hidden cases rejected before rendering",
+    "student role and real API denial, 401 clears view",
+    "empty public output/input, Unicode and mobile layout"
+  ],
+  "screenshots": [
+    "F04-editor-desktop.png",
+    "F04-editor-mobile.png",
+    "F04-previa-mobile.png"
+  ],
+  "developmentDataUsedForTests": false,
+  "limits": [
+    "preview remains a teacher author tool until B09 activities",
+    "no student submissions or grades",
+    "no new Judge0 executions or changes",
+    "no automatic retry of writes",
+    "recorded in a local commit; no new push"
+  ]
+}

@@ -19,7 +19,7 @@ test('teacher creates a draft with exact blank case values, code and CSRF; publi
     .fill('Escreva um programa sem saída para começar.');
   const code = page.getByRole('textbox', { name: 'Código inicial Python' });
   await code.fill('# código inicial\n');
-  await page.getByRole('button', { name: 'Adicionar caso público' }).click();
+  await page.getByRole('button', { name: 'Adicionar caso' }).click();
   await page.getByRole('button', { name: 'Salvar rascunho', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Olá, programação', exact: true })).toBeVisible();
   const created = state.requests.find((r) => r.path === '/api/questions' && r.method === 'POST');
@@ -65,7 +65,7 @@ test('saved draft needs at least one case before publication and supports remova
   state.questions[0].testCases = [];
   await page.goto(detail);
   await expect(page.getByRole('button', { name: 'Publicar versão 1' })).toBeDisabled();
-  await page.getByRole('button', { name: 'Adicionar caso público' }).click();
+  await page.getByRole('button', { name: 'Adicionar caso' }).click();
   await page.getByLabel('Entrada do caso 1').fill('42\n');
   await page.getByRole('button', { name: 'Salvar rascunho', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Publicar versão 1' })).toBeEnabled();
@@ -79,7 +79,7 @@ test('duplicate stdin and incompatible execution limits are rejected without a r
 }) => {
   const state = await mockQuestions(page);
   await page.goto(detail);
-  await page.getByRole('button', { name: 'Adicionar caso público' }).click();
+  await page.getByRole('button', { name: 'Adicionar caso' }).click();
   await page.getByLabel('Entrada do caso 2').fill(question.testCases[0].stdin);
   await page.getByRole('button', { name: 'Salvar rascunho', exact: true }).click();
   await expect(page.getByRole('alert')).toHaveText(/Não repita a mesma entrada/);

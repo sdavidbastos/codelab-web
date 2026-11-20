@@ -12,6 +12,7 @@ export const question: Question = {
   constraints: '-100 ≤ a, b ≤ 100',
   starterCode: '# Leia a entrada e calcule a soma\n',
   language: 'python3',
+  comparisonPolicy: 'judge0_text_rstrip_v1',
   cpuTimeLimitSeconds: 2,
   wallTimeLimitSeconds: 5,
   memoryLimitKb: 128000,
@@ -24,12 +25,14 @@ export const question: Question = {
     {
       id: '80000000-0000-4000-8000-000000000002',
       position: 1,
+      visibility: 'PUBLIC',
       stdin: '2 3\n',
       expectedOutput: '5\n',
       explanation: 'Dois mais três resulta em cinco.',
     },
   ],
 };
+export const privateMarker = 'CASO_PRIVADO_F04_ação';
 export function snapshot(value: Question, number: number): QuestionVersion {
   const {
     status: _status,
@@ -48,10 +51,21 @@ export function snapshot(value: Question, number: number): QuestionVersion {
 }
 export async function mockQuestions(
   page: Page,
-  options: { student?: boolean; empty?: boolean; published?: boolean } = {},
+  options: { student?: boolean; empty?: boolean; published?: boolean; hidden?: boolean } = {},
 ) {
   const auth = await mockClassrooms(page, { student: options.student });
   const initial = structuredClone(question);
+  if (options.hidden) {
+    initial.testCases[0].position = 2;
+    initial.testCases.unshift({
+      id: '80000000-0000-4000-8000-000000000003',
+      position: 1,
+      visibility: 'HIDDEN',
+      stdin: privateMarker + '_entrada',
+      expectedOutput: privateMarker + '_esperado',
+      explanation: privateMarker + '_explicação',
+    });
+  }
   if (options.published)
     Object.assign(initial, {
       status: 'PUBLISHED',
@@ -131,7 +145,8 @@ export async function mockQuestions(
       if (!found) return route.fulfill({ status: 404, json: {} });
       if (parts[4] === 'publish' && method === 'POST') {
         if (found.status === 'DRAFT') {
-          if (!found.testCases.length) return route.fulfill({ status: 409, json: {} });
+          if (!found.testCases.some((item) => item.visibility === 'PUBLIC'))
+            return route.fulfill({ status: 409, json: {} });
           found.status = 'PUBLISHED';
           found.publishedAt = '2026-11-14T13:00:00.000Z';
           found.latestVersionNumber++;
@@ -148,8 +163,27 @@ export async function mockQuestions(
         const versions = state.versions
           .filter((v) => v.questionId === found.id)
           .sort((a, b) => b.number - a.number);
-        if (parts[5])
-          return route.fulfill({ json: versions.find((v) => v.number === Number(parts[5])) });
+        if (parts[5]) {
+          const version = versions.find((v) => v.number === Number(parts[5]));
+          if (!version) return route.fulfill({ status: 404, json: {} });
+          if (parts[6] === 'preview') {
+            const { testCases, ...fields } = version;
+            return route.fulfill({
+              json: {
+                ...fields,
+                comparisonDescription:
+                  'Comparação textual: espaços finais são ignorados. Não há tolerância numérica.',
+                testCases: testCases
+                  .filter((item) => item.visibility === 'PUBLIC')
+                  .map(({ visibility: _visibility, ...item }, index) => ({
+                    ...item,
+                    position: index + 1,
+                  })),
+              },
+            });
+          }
+          return route.fulfill({ json: version });
+        }
         return route.fulfill({
           json: paginated(versions.map((v) => ({ ...v, testCaseCount: v.testCases.length }))),
         });

@@ -4,13 +4,21 @@ import { useMutation } from '../auth/hooks';
 import { RequestError } from '../../shared/api/http';
 import { useLeaveGuard } from '../../shared/ui/useLeaveGuard';
 import { Icon } from '../../shared/ui/Icon';
-import { parseQuestion, type Question } from './api';
+import { COMPARISON_POLICY, parseQuestion, type Question, type Visibility } from './api';
+import { ComparisonRule } from './ComparisonRule';
+import { CaseCounts } from './CaseCounts';
 import { PublishQuestion, DeleteQuestion } from './QuestionActions';
 
 const CodeEditor = lazy(async () => ({
   default: (await import('../../shared/ui/CodeEditor')).CodeEditor,
 }));
-type CaseInput = { key: string; stdin: string; expectedOutput: string; explanation: string };
+type CaseInput = {
+  key: string;
+  stdin: string;
+  expectedOutput: string;
+  explanation: string;
+  visibility: Visibility;
+};
 interface FormData {
   title: string;
   statement: string;
@@ -42,6 +50,7 @@ function initialForm(question?: Question): FormData {
         stdin: item.stdin,
         expectedOutput: item.expectedOutput,
         explanation: item.explanation,
+        visibility: item.visibility,
       })) ?? [],
   };
 }
@@ -71,7 +80,7 @@ function payload(form: FormData) {
     );
   const inputs = new Set(form.testCases.map((item) => item.stdin));
   if (inputs.size !== form.testCases.length)
-    throw new RequestError(400, 'Não repita a mesma entrada em dois casos públicos.');
+    throw new RequestError(400, 'Não repita a mesma entrada em dois casos de teste.');
   const body = {
     title: form.title.trim(),
     statement: form.statement,
@@ -81,6 +90,7 @@ function payload(form: FormData) {
     constraints: form.constraints,
     starterCode: form.starterCode,
     language: 'python3',
+    comparisonPolicy: COMPARISON_POLICY,
     cpuTimeLimitSeconds: cpu,
     wallTimeLimitSeconds: wall,
     memoryLimitKb: memory,
@@ -88,6 +98,7 @@ function payload(form: FormData) {
       stdin: item.stdin,
       expectedOutput: item.expectedOutput,
       explanation: item.explanation,
+      visibility: item.visibility,
     })),
   };
   if ([...form.starterCode].length > 20000)
@@ -144,7 +155,7 @@ export function QuestionForm({
             body: payload(form),
             signal,
             messages: {
-              409: 'Este exercício já foi publicado. Consulte a versão atual antes de editar.',
+              409: 'O exercício mudou no servidor. Consulte a versão atual e a visibilidade dos casos antes de tentar novamente.',
             },
           }),
         ),
@@ -314,28 +325,39 @@ export function QuestionForm({
             </label>
           </div>
           <p className="muted small">O tempo de parede deve ser maior ou igual ao limite de CPU.</p>
+          <ComparisonRule />
         </section>
         <section className="learning-panel" aria-labelledby="public-cases-title">
           <div className="section-heading">
             <div>
-              <h2 id="public-cases-title">Casos públicos</h2>
-              <p className="muted">Exemplos de entrada e saída, na ordem de publicação.</p>
+              <h2 id="public-cases-title">Casos de teste</h2>
+              <p className="muted">
+                Públicos mostram exemplos. Ocultos ficam restritos ao professor.
+              </p>
             </div>
             <span className="count-pill">{form.testCases.length}/20</span>
           </div>
+          <p className="case-counts" role="status">
+            <CaseCounts cases={form.testCases} />
+          </p>
           {form.testCases.length === 0 && (
             <p className="empty-state compact">
-              Você pode salvar sem casos. Adicione pelo menos um antes de publicar.
+              Você pode salvar sem casos. Adicione pelo menos um caso público antes de publicar.
             </p>
           )}
           {form.testCases.map((item, index) => (
             <section
               className="public-case"
               key={item.key}
-              aria-label={`Caso público ${index + 1}`}
+              aria-label={`Caso de teste ${index + 1}`}
             >
               <div className="section-heading">
                 <h3>Caso {index + 1}</h3>
+                <span
+                  className={`case-visibility ${item.visibility === 'HIDDEN' ? 'hidden' : 'public'}`}
+                >
+                  {item.visibility === 'HIDDEN' ? 'Oculto' : 'Público'}
+                </span>
                 <button
                   type="button"
                   className="text-button danger"
@@ -350,6 +372,31 @@ export function QuestionForm({
                   Remover caso
                 </button>
               </div>
+              <label className="learning-field case-visibility-field">
+                Visibilidade do caso {index + 1}
+                <select
+                  value={item.visibility}
+                  onChange={(event) => {
+                    const visibility = event.target.value;
+                    if (visibility !== 'PUBLIC' && visibility !== 'HIDDEN') return;
+                    setForm((current) => ({
+                      ...current,
+                      testCases: current.testCases.map((value) =>
+                        value.key === item.key ? { ...value, visibility } : value,
+                      ),
+                    }));
+                    setNotice('');
+                  }}
+                >
+                  <option value="PUBLIC">Público — exemplo para o aluno</option>
+                  <option value="HIDDEN">Oculto — apenas para o professor</option>
+                </select>
+              </label>
+              <p className="muted small">
+                {item.visibility === 'HIDDEN'
+                  ? 'Entrada, saída esperada e explicação deste caso não aparecem na prévia do aluno.'
+                  : 'Entrada, saída esperada e explicação deste caso aparecem na prévia do aluno.'}
+              </p>
               <div className="question-two-columns">
                 <label className="learning-field">
                   Entrada do caso {index + 1}
@@ -396,13 +443,19 @@ export function QuestionForm({
                 ...current,
                 testCases: [
                   ...current.testCases,
-                  { key: crypto.randomUUID(), stdin: '', expectedOutput: '', explanation: '' },
+                  {
+                    key: crypto.randomUUID(),
+                    stdin: '',
+                    expectedOutput: '',
+                    explanation: '',
+                    visibility: 'PUBLIC',
+                  },
                 ],
               }))
             }
           >
             <Icon name="plus" />
-            Adicionar caso público
+            Adicionar caso
           </button>
         </section>
       </fieldset>
@@ -439,7 +492,11 @@ export function QuestionForm({
             <button
               type="button"
               className="button secondary full-width"
-              disabled={mutation.pending || dirty || question.testCases.length === 0}
+              disabled={
+                mutation.pending ||
+                dirty ||
+                !question.testCases.some((item) => item.visibility === 'PUBLIC')
+              }
               onClick={() => setPublishing(true)}
             >
               Publicar versão {question.latestVersionNumber + 1}
@@ -447,7 +504,7 @@ export function QuestionForm({
             <p className="muted small">
               {dirty
                 ? 'Salve as alterações antes de publicar.'
-                : question.testCases.length === 0
+                : !question.testCases.some((item) => item.visibility === 'PUBLIC')
                   ? 'Adicione e salve pelo menos um caso público para publicar.'
                   : 'Uma versão publicada não poderá ser editada.'}
             </p>

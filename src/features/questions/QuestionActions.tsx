@@ -3,6 +3,7 @@ import { useMutation } from '../auth/hooks';
 import { Modal } from '../../shared/ui/Modal';
 import { useLeaveGuard } from '../../shared/ui/useLeaveGuard';
 import { parseQuestion, type Question } from './api';
+import { CaseCounts } from './CaseCounts';
 export function PublishQuestion({
   question,
   onClose,
@@ -20,8 +21,12 @@ export function PublishQuestion({
       <p>
         <strong>{question.title}</strong> será preservado como uma nova versão, com{' '}
         {question.testCases.length}{' '}
-        {question.testCases.length === 1 ? 'caso público' : 'casos públicos'}. Para alterar depois,
+        {question.testCases.length === 1 ? 'caso de teste' : 'casos de teste'}. Para alterar depois,
         abra um novo rascunho.
+      </p>
+      <p>
+        <CaseCounts cases={question.testCases} />. A visibilidade também fica preservada nesta
+        versão.
       </p>
       <p>Publicar não disponibiliza o exercício automaticamente para uma turma.</p>
       {mutation.error && (

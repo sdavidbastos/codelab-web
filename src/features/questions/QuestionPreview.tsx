@@ -1,5 +1,14 @@
-import type { QuestionContent } from './api';
-export function QuestionPreview({ content }: { content: QuestionContent }) {
+import type { QuestionContent, StudentQuestionVersion } from './api';
+import { ComparisonRule } from './ComparisonRule';
+type PreviewProps =
+  | { content: QuestionContent; audience?: 'teacher' }
+  | { content: StudentQuestionVersion; audience: 'student' };
+export function QuestionPreview(props: PreviewProps) {
+  const { content } = props;
+  const cases =
+    props.audience === 'student'
+      ? props.content.testCases.map((item) => ({ ...item, visibility: 'PUBLIC' as const }))
+      : props.content.testCases;
   const details = [
     ['Objetivo de aprendizagem', content.learningObjective],
     ['Entrada', content.inputDescription],
@@ -44,14 +53,29 @@ export function QuestionPreview({ content }: { content: QuestionContent }) {
             <dd>{content.memoryLimitKb.toLocaleString('pt-BR')} KB</dd>
           </div>
         </dl>
+        <ComparisonRule
+          description={
+            props.audience === 'student' ? props.content.comparisonDescription : undefined
+          }
+        />
       </section>
       <section className="learning-panel">
         <h2>
-          Casos públicos <span className="count-pill">{content.testCases.length}</span>
+          {props.audience === 'student' ? 'Casos públicos' : 'Casos de teste'}{' '}
+          <span className="count-pill">{cases.length}</span>
         </h2>
-        {content.testCases.map((item) => (
+        {cases.map((item) => (
           <article className="public-case" key={item.id}>
             <h3>Caso {item.position}</h3>
+            {props.audience !== 'student' && (
+              <p
+                className={`case-visibility ${item.visibility === 'HIDDEN' ? 'hidden' : 'public'}`}
+              >
+                {item.visibility === 'HIDDEN'
+                  ? 'Oculto · apenas para o professor'
+                  : 'Público · exemplo para o aluno'}
+              </p>
+            )}
             <div className="case-io">
               <div>
                 <h4>Entrada</h4>

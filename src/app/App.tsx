@@ -7,6 +7,7 @@ import { errorMessage, isUuid } from '../shared/api/http';
 import { Icon } from '../shared/ui/Icon';
 import { QuestionsPage } from '../features/questions/QuestionsPage';
 import { QuestionPage, NewQuestionPage, VersionPage } from '../features/questions/QuestionPage';
+import { StudentPreviewPage } from '../features/questions/StudentPreviewPage';
 import { LEAVE_EVENT } from '../shared/ui/useLeaveGuard';
 import { PracticePage } from './PracticePage';
 import './learning.css';
@@ -14,7 +15,7 @@ import './questions.css';
 
 type LearningRoute =
   | { kind: 'classrooms'; id?: string }
-  | { kind: 'questions'; id?: string; creating?: boolean; version?: number };
+  | { kind: 'questions'; id?: string; creating?: boolean; version?: number; preview?: boolean };
 function parseRoute(hash: string): LearningRoute | null {
   if (hash === '#/turmas') return { kind: 'classrooms' };
   if (hash === '#/exercicios') return { kind: 'questions' };
@@ -23,14 +24,19 @@ function parseRoute(hash: string): LearningRoute | null {
   if (parts.length === 3 && isUuid(parts[2]) && ['turmas', 'exercicios'].includes(parts[1]))
     return { kind: parts[1] === 'turmas' ? 'classrooms' : 'questions', id: parts[2] };
   if (
-    parts.length === 5 &&
+    (parts.length === 5 || (parts.length === 6 && parts[5] === 'previa')) &&
     parts[1] === 'exercicios' &&
     isUuid(parts[2]) &&
     parts[3] === 'versoes' &&
     /^[1-9]\d*$/.test(parts[4]) &&
     Number(parts[4]) <= 2147483647
   )
-    return { kind: 'questions', id: parts[2], version: Number(parts[4]) };
+    return {
+      kind: 'questions',
+      id: parts[2],
+      version: Number(parts[4]),
+      preview: parts.length === 6,
+    };
   return null;
 }
 
@@ -132,6 +138,14 @@ function ProtectedArea({ route }: { route: LearningRoute }) {
         </main>
       );
     if (route.creating) return <NewQuestionPage key={user.id} />;
+    if (route.id && route.version && route.preview)
+      return (
+        <StudentPreviewPage
+          key={user.id + route.id + route.version}
+          id={route.id}
+          number={route.version}
+        />
+      );
     if (route.id && route.version)
       return (
         <VersionPage

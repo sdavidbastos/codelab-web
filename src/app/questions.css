@@ -34,6 +34,68 @@
   color: #a0ddbd;
   background: #203d2c;
 }
+.case-counts {
+  color: #bacbbf;
+  font-size: 12px;
+  margin: 12px 0 24px;
+}
+.case-visibility {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid;
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 10px;
+  line-height: 1.5;
+}
+.case-visibility.public {
+  color: #a0ddbd;
+  background: #203d2c;
+  border-color: #3c6450;
+}
+.case-visibility.hidden {
+  color: #edc98e;
+  background: #332c20;
+  border-color: #67583a;
+}
+.case-visibility-field select {
+  width: 100%;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid #3c454f;
+  border-radius: 7px;
+  color: #e4e9ed;
+  background: #12181b;
+  font: inherit;
+}
+.comparison-rule {
+  border-top: 1px solid #354039;
+  margin-top: 26px;
+  padding-top: 20px;
+  color: #bac6ce;
+  font-size: 12px;
+  line-height: 1.8;
+}
+.comparison-rule h3 {
+  margin: 0;
+  font-size: 13px;
+  color: #d5dfd9;
+}
+.comparison-rule p {
+  margin: 8px 0 0;
+}
+.comparison-example code {
+  color: #a0ddbd;
+}
+.preview-link {
+  margin: 0 0 22px;
+}
+.preview-notice {
+  background: #192d32;
+  border: 1px solid #36555e;
+  color: #bddce1;
+  margin-bottom: 24px;
+}
 .question-editor-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 282px;

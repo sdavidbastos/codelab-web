@@ -103,6 +103,12 @@ export function QuestionPage({ id }: { id: string }) {
               <p className="feedback good" role="status">
                 Versão {resource.state.data.latestVersionNumber} publicada e preservada.
               </p>
+              <a
+                className="button secondary preview-link"
+                href={`#/exercicios/${id}/versoes/${resource.state.data.latestVersionNumber}/previa`}
+              >
+                Prévia do aluno
+              </a>
               <QuestionPreview content={resource.state.data} />
             </>
           )}
@@ -149,6 +155,12 @@ export function VersionPage({ id, number }: { id: string; number: number }) {
           <p className="feedback good">
             Esta versão permanece preservada, mesmo após novas revisões do exercício.
           </p>
+          <a
+            className="button secondary preview-link"
+            href={`#/exercicios/${id}/versoes/${number}/previa`}
+          >
+            Prévia do aluno
+          </a>
           <QuestionPreview content={resource.state.data} />
         </>
       )}

@@ -98,9 +98,9 @@ npx playwright install chromium
 npm test
 ```
 
-Os **53 testes Playwright** sobem Vite na porta 5174 e interceptam a API, sem
+Os **69 testes Playwright** sobem Vite na porta 5174 e interceptam a API, sem
 usar dados ou submissões reais. Cobrem login/CSRF, papéis, turmas, matrículas,
-exercícios e versões, DTO público, estados, falhas, retomada,
+exercícios e versões, visibilidade e prévia, DTO público, estados, falhas, retomada,
 snapshot, rascunhos, teclado, mobile, armazenamento indisponível e saída segura.
 Para usar um Chrome já instalado, configure
 `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/google-chrome`.
@@ -164,7 +164,7 @@ salvamento preservam os campos, sem reenvio automático. O rascunho de autoria
 fica em memória até ser salvo no servidor.
 
 A publicação ainda não vincula o exercício a turmas nem cria atividades para
-alunos. Os casos desta etapa são públicos; casos ocultos e avaliação vêm nas
+alunos. A F04 acrescenta casos ocultos e prévia da visão do aluno; avaliação vem nas
 próximas etapas. A prática livre mantém seu catálogo independente.
 
 Para validar com backend B07 e PostgreSQL descartáveis:
@@ -176,3 +176,19 @@ npm run test:questions:real
 Usa os mesmos requisitos e portas do teste real de turmas; execute os dois
 comandos separadamente. Não requer Judge0 nem usa o banco de desenvolvimento.
 Detalhes e evidências no [guia F03](docs/F03_EXERCICIOS_VERSOES.md).
+
+## Casos públicos/ocultos e prévia — F04
+
+Com a API B08 ativa, abra **http://localhost:5173/#/exercicios** como professor.
+Cada caso permite selecionar **Público** ou **Oculto**. O formulário mostra as
+contagens e a regra textual de comparação; salvar preserva explicitamente a
+visibilidade. Para publicar, salve ao menos um exemplo público.
+
+Após publicar, use **Prévia do aluno** no exercício ou no detalhe de uma versão
+do histórico. Essa tela consulta a projeção filtrada do backend, com somente
+casos públicos. Revisões não alteram a prévia das versões anteriores. É uma
+ferramenta docente; a distribuição para alunos depende das atividades B09.
+
+`npm run test:questions:real` agora executa **dois fluxos reais** com API B08 e
+PostgreSQL descartável: regressão F03 e bateria mista com prévia/versionamento.
+Não usa dados de desenvolvimento nem o Judge0. [Guia e evidências F04](docs/F04_CASOS_PREVIA.md).
