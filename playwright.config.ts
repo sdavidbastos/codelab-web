@@ -4,6 +4,7 @@ export default defineConfig({
   testDir: './test/browser',
   outputDir: 'test-results/mocked',
   testMatch: [
+    'activities.spec.ts',
     'practice.spec.ts',
     'classrooms.spec.ts',
     'questions.spec.ts',

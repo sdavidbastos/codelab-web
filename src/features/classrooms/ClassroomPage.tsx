@@ -1,3 +1,4 @@
+import { ActivitiesPanel } from '../activities/ActivitiesPanel';
 import { useState, type FormEvent } from 'react';
 import { useAuth } from '../auth/AuthProvider';
 import { useMutation, useQuery } from '../auth/hooks';
@@ -280,6 +281,7 @@ export function ClassroomPage({ id }: { id: string }) {
               {notice}
             </p>
           )}
+          <ActivitiesPanel classroomId={id} teacher={teacher} />
           {teacher ? (
             <Roster classroomId={id} />
           ) : (
@@ -288,10 +290,7 @@ export function ClassroomPage({ id }: { id: string }) {
                 <Icon name="check" />
               </span>
               <h2>Você faz parte desta turma.</h2>
-              <p>
-                Seu professor organiza a participação por aqui. Enquanto isso, você pode continuar
-                praticando com os exemplos Python.
-              </p>
+              <p>Consulte as atividades acima ou continue praticando com os exemplos Python.</p>
               <a className="button secondary" href="#hello">
                 Abrir prática livre <Icon name="arrow" />
               </a>

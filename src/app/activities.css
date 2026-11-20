@@ -1,0 +1,120 @@
+.activities-panel {
+  margin-bottom: 36px;
+}
+.activities-panel .section-heading {
+  flex-wrap: wrap;
+}
+.activities-panel .classroom-card h3 {
+  font-size: 18px;
+  line-height: 1.5;
+  margin: 0 0 8px;
+  overflow-wrap: anywhere;
+}
+.activity-status {
+  display: inline-flex;
+  border: 1px solid #506158;
+  border-radius: 20px;
+  padding: 6px 12px;
+  font-size: 11px;
+  white-space: nowrap;
+}
+.activity-status.draft {
+  color: #e5c68f;
+  background: #332b20;
+  border-color: #655139;
+}
+.activity-status.open {
+  color: #ade5c2;
+  background: #203a2b;
+  border-color: #3d6850;
+}
+.activity-status.closed {
+  color: #b9c5d6;
+  background: #29313d;
+  border-color: #495a6f;
+}
+.activity-fields {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+  display: grid;
+  gap: 24px;
+}
+.activity-fields h2 {
+  margin-top: 0;
+  font-size: 20px;
+}
+.activity-fields .question-search {
+  align-items: end;
+}
+.activity-fields .question-search .learning-field {
+  margin-bottom: 0;
+  flex: 1;
+}
+.activity-create-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  margin-top: 24px;
+}
+.activity-create-actions .button {
+  flex-shrink: 0;
+}
+.picker-options {
+  display: grid;
+  gap: 10px;
+  margin-top: 20px;
+}
+.picker-option {
+  text-align: left;
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+  border: 1px solid #3a454e;
+  border-radius: 9px;
+  background: #151b1f;
+  color: #cbd6de;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.picker-option strong {
+  font-size: 13px;
+  font-weight: 550;
+}
+.picker-option span {
+  font-size: 11px;
+  color: #9daeb7;
+}
+.picker-option[aria-pressed='true'] {
+  border-color: #77c697;
+  background: #213a2b;
+}
+.picker-option:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.version-picker {
+  margin-top: 28px;
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+.activity-actions,
+.activity-dates {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+.activity-dates {
+  font-size: 11px;
+  color: var(--muted);
+}
+@media (max-width: 640px) {
+  .activity-create-actions {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 12px;
+  }
+}

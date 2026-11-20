@@ -96,6 +96,16 @@ export async function mockClassrooms(
         if (method === 'PATCH') Object.assign(found, body);
         return route.fulfill({ json: found });
       }
+      if (parts[4] === 'activities' && method === 'GET') {
+        return route.fulfill({
+          json: {
+            items: [],
+            total: 0,
+            page: Number(url.searchParams.get('page') ?? 1),
+            pageSize: Number(url.searchParams.get('pageSize') ?? 6),
+          },
+        });
+      }
       if (parts[4] === 'enrollments') {
         if (state.student) return route.fulfill({ status: 403, json: {} });
         if (method === 'POST') {

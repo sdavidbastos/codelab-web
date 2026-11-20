@@ -1,7 +1,7 @@
 # CodeLab Web
 
 Interface do TCC em **React + TypeScript**, com prática Python, login, turmas,
-matrículas e autoria de exercícios versionados conectados ao backend NestJS.
+matrículas, exercícios versionados e atividades por turma conectados ao backend NestJS.
 A prática livre oferece editor Python, exemplos públicos, entrada personalizada,
 saída esperada opcional e resultado real.
 
@@ -98,9 +98,9 @@ npx playwright install chromium
 npm test
 ```
 
-Os **69 testes Playwright** sobem Vite na porta 5174 e interceptam a API, sem
+Os **85 testes Playwright** sobem Vite na porta 5174 e interceptam a API, sem
 usar dados ou submissões reais. Cobrem login/CSRF, papéis, turmas, matrículas,
-exercícios e versões, visibilidade e prévia, DTO público, estados, falhas, retomada,
+exercícios e versões, visibilidade, prévia e atividades, DTO público, estados, falhas, retomada,
 snapshot, rascunhos, teclado, mobile, armazenamento indisponível e saída segura.
 Para usar um Chrome já instalado, configure
 `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/google-chrome`.
@@ -116,7 +116,7 @@ stdin UTF-8. A CI configura somente testes simulados; não depende de sandbox
 privilegiado. A configuração de CI ainda não foi executada remotamente.
 
 Arquitetura e evidências estão em [F01](docs/F01_INTERFACE_REACT.md).
-Repositório local, sem publicação remota.
+Repositório independente; sem nova publicação remota nesta etapa.
 
 ## Turmas, matrículas e login — F02
 
@@ -163,9 +163,9 @@ podem ser excluídos. Alterações não salvas pedem confirmação ao sair; falh
 salvamento preservam os campos, sem reenvio automático. O rascunho de autoria
 fica em memória até ser salvo no servidor.
 
-A publicação ainda não vincula o exercício a turmas nem cria atividades para
-alunos. A F04 acrescenta casos ocultos e prévia da visão do aluno; avaliação vem nas
-próximas etapas. A prática livre mantém seu catálogo independente.
+A publicação preserva uma versão do exercício. A F04 acrescenta casos ocultos
+e prévia da visão do aluno; a F05 permite distribuir versões por turma. Avaliação
+vem nas próximas etapas. A prática livre mantém seu catálogo independente.
 
 Para validar com backend B07 e PostgreSQL descartáveis:
 
@@ -187,8 +187,27 @@ visibilidade. Para publicar, salve ao menos um exemplo público.
 Após publicar, use **Prévia do aluno** no exercício ou no detalhe de uma versão
 do histórico. Essa tela consulta a projeção filtrada do backend, com somente
 casos públicos. Revisões não alteram a prévia das versões anteriores. É uma
-ferramenta docente; a distribuição para alunos depende das atividades B09.
+ferramenta docente; alunos consultam o conteúdo pela interface de atividades F05/B09.
 
 `npm run test:questions:real` agora executa **dois fluxos reais** com API B08 e
 PostgreSQL descartável: regressão F03 e bateria mista com prévia/versionamento.
 Não usa dados de desenvolvimento nem o Judge0. [Guia e evidências F04](docs/F04_CASOS_PREVIA.md).
+
+## Atividades por turma — F05
+
+Com a API B09 ativa, abra **http://localhost:5173/#/turmas** e entre em uma turma.
+Como professor, use **Nova atividade**, informe título/orientações e escolha uma
+versão publicada de um exercício. Após criar o rascunho, **Abrir atividade**
+disponibiliza o conteúdo aos alunos matriculados. **Encerrar atividade** é
+definitivo; a turma continua podendo consultar o conteúdo.
+
+Como aluno, abra sua turma e use **Ver atividade**. São exibidos somente os
+casos públicos da versão escolhida. Rascunhos ficam restritos ao professor;
+ainda não há envio de soluções ou avaliação de atividades nesta etapa.
+
+```bash
+npm run test:activities:real
+```
+
+O teste usa NestJS/PostgreSQL descartáveis, nas mesmas portas dos outros testes
+reais educacionais; execute separadamente. [Guia e evidências F05](docs/F05_ATIVIDADES.md).

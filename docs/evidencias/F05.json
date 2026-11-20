@@ -1,0 +1,74 @@
+{
+  "task": "F05 — interface de atividades por turma integrada à B09",
+  "date": "2026-11-20",
+  "repository": "codelab-web",
+  "baseCommits": {
+    "web": "18093bc",
+    "api": "86ea030"
+  },
+  "checks": {
+    "typescriptAndViteBuild": "passed",
+    "prettier": "passed",
+    "gitDiffCheck": "passed",
+    "bashSyntax": "passed",
+    "playwrightMocked": {
+      "passed": 85,
+      "activities": 16,
+      "practice": 21,
+      "authAndClassrooms": 18,
+      "questionsAndVersions": 14,
+      "visibilityAndPreview": 16
+    },
+    "playwrightActivitiesReal": {
+      "passed": 1,
+      "backend": "NestJS B09",
+      "database": "disposable PostgreSQL tmpfs; TEST_DATABASE_URL only",
+      "interceptedApi": false,
+      "judge0Executions": 0,
+      "fixturePreparation": "real HTTP for exercise publications; F05 creation, lifecycle and reading through UI"
+    },
+    "visualInspection": {
+      "desktop": "1440x1000",
+      "mobile": "390x844",
+      "horizontalOverflow": false,
+      "source": "synthetic mocked browser fixtures"
+    },
+    "localDockerSmoke": {
+      "webStatus": 200,
+      "apiReadyStatus": 200,
+      "anonymousActivityStatus": 401,
+      "activityCacheControl": "no-store",
+      "loginVisible": true,
+      "bundle": "index-BorpYL2g.js",
+      "browserErrors": []
+    }
+  },
+  "covered": [
+    "teacher creates DRAFT with actual version UUID and CSRF",
+    "published history remains selectable while root is under revision",
+    "server pagination/search/filtering for activities, questions and versions",
+    "changing question clears selected version; unpublished roots disabled",
+    "fields and selection preserved after failure; pending writes block editing/navigation/duplicates",
+    "opening/terminal closing with confirmation and public immutable content preserved",
+    "lost lifecycle confirmation reconciled by GET without another POST",
+    "draft excluded from student list/counts/detail; student routes never fetch author endpoints or roster",
+    "public JSON/DOM excludes hidden case data; strict runtime DTO validation",
+    "closed reading remains available; revocation returns 404 and expiry removes private view",
+    "reload persistence, hostile text rendered safely, keyboard focus and mobile layout"
+  ],
+  "screenshots": [
+    "F05-turma-desktop.png",
+    "F05-criacao-mobile.png",
+    "F05-atividade-mobile.png"
+  ],
+  "developmentDataUsedForTests": false,
+  "verificationNotes": [
+    "An earlier regression run encountered Chromium ERR_NETWORK_CHANGED while Docker was being rebuilt; final regression ran after Docker changes finished."
+  ],
+  "limits": [
+    "no solution submission, grading or new Judge0 execution",
+    "API B09 remains the authorization authority",
+    "no automatic retry of writes",
+    "recorded in a local commit; no new push"
+  ]
+}

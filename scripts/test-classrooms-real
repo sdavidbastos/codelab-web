@@ -6,8 +6,8 @@ cd "$codelab_web_root"
 command -v node >/dev/null || { printf 'Node 24 is required for the browser test runner.\n' >&2; exit 1; }
 codelab_test_suite="${1:-classrooms}"
 case "$codelab_test_suite" in
-  classrooms|questions) ;;
-  *) printf 'Use classrooms or questions as the test suite.\n' >&2; exit 1 ;;
+  classrooms|questions|activities) ;;
+  *) printf 'Use classrooms, questions or activities as the test suite.\n' >&2; exit 1 ;;
 esac
 umask 077
 export CODELAB_TEST_PRIVATE_DIR

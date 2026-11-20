@@ -16,7 +16,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test:classrooms:real": "./scripts/test-classrooms-real",
-    "test:questions:real": "./scripts/test-classrooms-real questions"
+    "test:questions:real": "./scripts/test-classrooms-real questions",
+    "test:activities:real": "./scripts/test-classrooms-real activities"
   },
   "dependencies": {
     "@codemirror/commands": "6.11.1",

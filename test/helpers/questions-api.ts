@@ -137,7 +137,18 @@ export async function mockQuestions(
                 .includes((url.searchParams.get('search') ?? '').toLowerCase()) &&
               (!url.searchParams.get('status') || item.status === url.searchParams.get('status')),
           )
-          .map((item) => ({ ...item, testCaseCount: item.testCases.length }));
+          .map((item) => ({
+            id: item.id,
+            title: item.title,
+            language: item.language,
+            comparisonPolicy: item.comparisonPolicy,
+            status: item.status,
+            createdAt: item.createdAt,
+            updatedAt: item.updatedAt,
+            publishedAt: item.publishedAt,
+            latestVersionNumber: item.latestVersionNumber,
+            testCaseCount: item.testCases.length,
+          }));
         return route.fulfill({ json: paginated(items) });
       }
       const parts = path.split('/');
@@ -185,7 +196,21 @@ export async function mockQuestions(
           return route.fulfill({ json: version });
         }
         return route.fulfill({
-          json: paginated(versions.map((v) => ({ ...v, testCaseCount: v.testCases.length }))),
+          json: paginated(
+            versions.map((v) => ({
+              id: v.id,
+              questionId: v.questionId,
+              number: v.number,
+              title: v.title,
+              language: v.language,
+              comparisonPolicy: v.comparisonPolicy,
+              cpuTimeLimitSeconds: v.cpuTimeLimitSeconds,
+              wallTimeLimitSeconds: v.wallTimeLimitSeconds,
+              memoryLimitKb: v.memoryLimitKb,
+              publishedAt: v.publishedAt,
+              testCaseCount: v.testCases.length,
+            })),
+          ),
         });
       }
       if (method === 'PATCH') {

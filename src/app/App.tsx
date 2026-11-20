@@ -10,17 +10,32 @@ import { QuestionPage, NewQuestionPage, VersionPage } from '../features/question
 import { StudentPreviewPage } from '../features/questions/StudentPreviewPage';
 import { LEAVE_EVENT } from '../shared/ui/useLeaveGuard';
 import { PracticePage } from './PracticePage';
+import { ActivityPage } from '../features/activities/ActivityPage';
+import { NewActivityPage } from '../features/activities/NewActivityPage';
+import './activities.css';
 import './learning.css';
 import './questions.css';
 
 type LearningRoute =
   | { kind: 'classrooms'; id?: string }
+  | { kind: 'activity'; id: string }
+  | { kind: 'newActivity'; classroomId: string }
   | { kind: 'questions'; id?: string; creating?: boolean; version?: number; preview?: boolean };
 function parseRoute(hash: string): LearningRoute | null {
   if (hash === '#/turmas') return { kind: 'classrooms' };
   if (hash === '#/exercicios') return { kind: 'questions' };
   if (hash === '#/exercicios/novo') return { kind: 'questions', creating: true };
   const parts = hash.split('/');
+  if (parts.length === 3 && parts[1] === 'atividades' && isUuid(parts[2]))
+    return { kind: 'activity', id: parts[2] };
+  if (
+    parts.length === 5 &&
+    parts[1] === 'turmas' &&
+    isUuid(parts[2]) &&
+    parts[3] === 'atividades' &&
+    parts[4] === 'nova'
+  )
+    return { kind: 'newActivity', classroomId: parts[2] };
   if (parts.length === 3 && isUuid(parts[2]) && ['turmas', 'exercicios'].includes(parts[1]))
     return { kind: parts[1] === 'turmas' ? 'classrooms' : 'questions', id: parts[2] };
   if (
@@ -126,17 +141,20 @@ function ProtectedArea({ route }: { route: LearningRoute }) {
     );
   if (auth.state.phase === 'anonymous') return <LoginPage notice={auth.state.notice} />;
   const user = auth.state.session.user;
+  if (route.kind === 'activity') return <ActivityPage key={user.id + route.id} id={route.id} />;
+  if ((route.kind === 'questions' || route.kind === 'newActivity') && user.role !== 'TEACHER')
+    return (
+      <main className="learning-main query-state">
+        <h1>Área do professor</h1>
+        <p>Exercícios e atividades são organizados pelo professor responsável.</p>
+        <a className="button secondary" href="#/turmas">
+          Ver minhas turmas
+        </a>
+      </main>
+    );
+  if (route.kind === 'newActivity')
+    return <NewActivityPage key={user.id + route.classroomId} classroomId={route.classroomId} />;
   if (route.kind === 'questions') {
-    if (user.role !== 'TEACHER')
-      return (
-        <main className="learning-main query-state">
-          <h1>Área do professor</h1>
-          <p>Os exercícios são organizados pelo professor responsável.</p>
-          <a className="button secondary" href="#/turmas">
-            Ver minhas turmas
-          </a>
-        </main>
-      );
     if (route.creating) return <NewQuestionPage key={user.id} />;
     if (route.id && route.version && route.preview)
       return (
